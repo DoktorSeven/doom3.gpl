@@ -1150,7 +1150,7 @@ static void RB_T_Shadow( const drawSurf_t *surf ) {
 		qglStencilOp( GL_KEEP, tr.stencilDecr, tr.stencilDecr );
 		GL_Cull( CT_FRONT_SIDED );
 		RB_DrawShadowElementsWithCounters( tri, numIndexes );
-		qglStencilOp( GL_KEEP, tr.stencilIncr, tr.stencilIncr );
+		qglStencilOp( GL_KEEP, tr.stencilIncr, GL_KEEP );
 		GL_Cull( CT_BACK_SIDED );
 		RB_DrawShadowElementsWithCounters( tri, numIndexes );
 	}

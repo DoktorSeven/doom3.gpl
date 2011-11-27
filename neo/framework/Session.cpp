@@ -2982,14 +2982,18 @@ void idSessionLocal::TimeHitch( int msec ) {
 idSessionLocal::ReadCDKey
 =================
 */
+
+/* Going to attempt to hack this to not require a CD key at all for at least singleplayer */
+/* TODO: Look for server key auth and disable it as well */
+
 void idSessionLocal::ReadCDKey( void ) {
-	idStr filename;
+/*	idStr filename;
 	idFile *f;
-	char buffer[32];
+	char buffer[32]; */
 
-	cdkey_state = CDKEY_UNKNOWN;
+	cdkey_state = CDKEY_OK;
 
-	filename = "../" BASE_GAMEDIR "/" CDKEY_FILE;
+/*	filename = "../" BASE_GAMEDIR "/" CDKEY_FILE;
 	f = fileSystem->OpenExplicitFileRead( fileSystem->RelativePathToOSPath( filename, "fs_savepath" ) );
 	if ( !f ) {
 		common->Printf( "Couldn't read %s.\n", filename.c_str() );
@@ -2999,11 +3003,11 @@ void idSessionLocal::ReadCDKey( void ) {
 		f->Read( buffer, CDKEY_BUF_LEN - 1 );
 		fileSystem->CloseFile( f );
 		idStr::Copynz( cdkey, buffer, CDKEY_BUF_LEN );
-	}
+	}*/
 
-	xpkey_state = CDKEY_UNKNOWN;
+	xpkey_state = CDKEY_OK;
 
-	filename = "../" BASE_GAMEDIR "/" XPKEY_FILE;
+/*	filename = "../" BASE_GAMEDIR "/" XPKEY_FILE;
 	f = fileSystem->OpenExplicitFileRead( fileSystem->RelativePathToOSPath( filename, "fs_savepath" ) );
 	if ( !f ) {
 		common->Printf( "Couldn't read %s.\n", filename.c_str() );
@@ -3013,7 +3017,7 @@ void idSessionLocal::ReadCDKey( void ) {
 		f->Read( buffer, CDKEY_BUF_LEN - 1 );
 		fileSystem->CloseFile( f );
 		idStr::Copynz( xpkey, buffer, CDKEY_BUF_LEN );
-	}
+	}*/
 }
 
 /*
@@ -3022,14 +3026,14 @@ idSessionLocal::WriteCDKey
 ================
 */
 void idSessionLocal::WriteCDKey( void ) {
-	idStr filename;
+/*	idStr filename;
 	idFile *f;
 	const char *OSPath;
 
-	filename = "../" BASE_GAMEDIR "/" CDKEY_FILE;
+	filename = "../" BASE_GAMEDIR "/" CDKEY_FILE;*/
 	// OpenFileWrite advertises creating directories to the path if needed, but that won't work with a '..' in the path
 	// occasionally on windows, but mostly on Linux and OSX, the fs_savepath/base may not exist in full
-	OSPath = fileSystem->BuildOSPath( cvarSystem->GetCVarString( "fs_savepath" ), BASE_GAMEDIR, CDKEY_FILE );
+/*	OSPath = fileSystem->BuildOSPath( cvarSystem->GetCVarString( "fs_savepath" ), BASE_GAMEDIR, CDKEY_FILE );
 	fileSystem->CreateOSPath( OSPath );
 	f = fileSystem->OpenFileWrite( filename );
 	if ( !f ) {
@@ -3046,7 +3050,7 @@ void idSessionLocal::WriteCDKey( void ) {
 		return;
 	}
 	f->Printf( "%s%s", xpkey, CDKEY_TEXT );
-	fileSystem->CloseFile( f );
+	fileSystem->CloseFile( f );*/
 }
 
 /*
@@ -3055,20 +3059,20 @@ idSessionLocal::ClearKey
 ===============
 */
 void idSessionLocal::ClearCDKey( bool valid[ 2 ] ) {
-	if ( !valid[ 0 ] ) {
+/*	if ( !valid[ 0 ] ) {
 		memset( cdkey, 0, CDKEY_BUF_LEN );
 		cdkey_state = CDKEY_UNKNOWN;
-	} else if ( cdkey_state == CDKEY_CHECKING ) {
+	} else if ( cdkey_state == CDKEY_CHECKING ) {*/
 		// if a key was in checking and not explicitely asked for clearing, put it back to ok
 		cdkey_state = CDKEY_OK;
-	}
+/*	}
 	if ( !valid[ 1 ] ) {
 		memset( xpkey, 0, CDKEY_BUF_LEN );
 		xpkey_state = CDKEY_UNKNOWN;
-	} else if ( xpkey_state == CDKEY_CHECKING ) {
+	} else if ( xpkey_state == CDKEY_CHECKING ) {*/
 		xpkey_state = CDKEY_OK;
-	}
-	WriteCDKey( );
+/*	}
+	WriteCDKey( );*/
 }
 
 /*
@@ -3077,12 +3081,13 @@ idSessionLocal::GetCDKey
 ================
 */
 const char *idSessionLocal::GetCDKey( bool xp ) {
-	if ( !xp ) {
+/*	if ( !xp ) {
 		return cdkey;
 	}
 	if ( xpkey_state == CDKEY_OK || xpkey_state == CDKEY_CHECKING ) {
 		return xpkey;
-	}
+	}*/
+	// We might need to make up a key here to return as "valid"
 	return NULL;
 }
 
@@ -3097,20 +3102,20 @@ we toggled some key state to CDKEY_CHECKING. send a standalone auth packet to va
 */
 void idSessionLocal::EmitGameAuth( void ) {
 	// make sure the auth reply is empty, we use it to indicate an auth reply
-	authMsg.Empty();
+/*	authMsg.Empty();
 	if ( idAsyncNetwork::client.SendAuthCheck( cdkey_state == CDKEY_CHECKING ? cdkey : NULL, xpkey_state == CDKEY_CHECKING ? xpkey : NULL ) ) {		
 		authEmitTimeout = Sys_Milliseconds() + CDKEY_AUTH_TIMEOUT;
 		common->DPrintf( "authing with the master..\n" );
 	} else {
 		// net is not available
 		common->DPrintf( "sendAuthCheck failed\n" );
-		if ( cdkey_state == CDKEY_CHECKING ) {
+		if ( cdkey_state == CDKEY_CHECKING ) {*/
 			cdkey_state = CDKEY_OK;
-		}
-		if ( xpkey_state == CDKEY_CHECKING ) {
+/*		}
+		if ( xpkey_state == CDKEY_CHECKING ) {*/
 			xpkey_state = CDKEY_OK;
-		}
-	}	
+//		}
+//	}	
 }
 
 /*
@@ -3121,7 +3126,7 @@ if the function returns false, the offline checks failed, and offline_valid hold
 ================
 */
 bool idSessionLocal::CheckKey( const char *key, bool netConnect, bool offline_valid[ 2 ] ) {
-	char lkey[ 2 ][ CDKEY_BUF_LEN ];
+/*	char lkey[ 2 ][ CDKEY_BUF_LEN ];
 	char l_chk[ 2 ][ 3 ];
 	char s_chk[ 3 ];
 	int imax,i_key;
@@ -3189,8 +3194,9 @@ bool idSessionLocal::CheckKey( const char *key, bool netConnect, bool offline_va
 	if ( !netConnect ) {
 		EmitGameAuth();
 	}
-	SetCDKeyGuiVars();
-
+	SetCDKeyGuiVars();*/
+	cdkey_state = CDKEY_OK;
+	xpkey_state = CDKEY_OK;
 	return true;
 }
 
@@ -3203,7 +3209,7 @@ emit an auth packet to the master if possible and needed
 ===============
 */
 bool idSessionLocal::CDKeysAreValid( bool strict ) {
-	int i;
+/*	int i;
 	bool emitAuth = false;
 
 	if ( cdkey_state == CDKEY_UNKNOWN ) {
@@ -3250,7 +3256,8 @@ bool idSessionLocal::CDKeysAreValid( bool strict ) {
 		return cdkey_state == CDKEY_OK && ( xpkey_state == CDKEY_OK || xpkey_state == CDKEY_NA );
 	} else {
 		return ( cdkey_state == CDKEY_OK || cdkey_state == CDKEY_CHECKING ) && ( xpkey_state == CDKEY_OK || xpkey_state == CDKEY_CHECKING || xpkey_state == CDKEY_NA );
-	}
+	}*/
+	return true;
 }
 
 /*
@@ -3259,7 +3266,8 @@ idSessionLocal::WaitingForGameAuth
 ===============
 */
 bool idSessionLocal::WaitingForGameAuth( void ) {
-	return authEmitTimeout != 0;
+//	return authEmitTimeout != 0;
+	return false;
 }
 
 /*
@@ -3268,12 +3276,12 @@ idSessionLocal::CDKeysAuthReply
 ===============
 */
 void idSessionLocal::CDKeysAuthReply( bool valid, const char *auth_msg ) {
-	assert( authEmitTimeout > 0 );
+/*	assert( authEmitTimeout > 0 );
 	if ( authWaitBox ) {
-		// close the wait box
+		// close the wait box */
 		StopBox();
 		authWaitBox = false;
-	}
+/*	}
 	if ( !valid ) {
 		common->DPrintf( "auth key is invalid\n" );
 		authMsg = auth_msg;
@@ -3293,7 +3301,9 @@ void idSessionLocal::CDKeysAuthReply( bool valid, const char *auth_msg ) {
 		}
 	}
 	authEmitTimeout = 0;
-	SetCDKeyGuiVars();
+	SetCDKeyGuiVars();*/
+	cdkey_state = CDKEY_OK;
+	xpkey_state = CDKEY_OK;
 }
 
 /*
