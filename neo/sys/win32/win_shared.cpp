@@ -47,6 +47,12 @@ If you have questions concerning this license or the applicable additional terms
 #pragma comment (lib, "wbemuuid.lib")
 #endif
 
+#ifndef IOD3_ENABLE_MFC
+
+#include "win_nanoafx.h"
+
+#endif
+
 /*
 ================
 Sys_Milliseconds

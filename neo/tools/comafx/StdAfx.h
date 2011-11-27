@@ -29,6 +29,8 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __AFX_STDAFX_H__
 #define __AFX_STDAFX_H__
 
+#ifdef IOD3_ENABLE_MFC
+
 //  include file for standard system include files,
 //  or project specific include files that are used frequently, but
 //  are changed infrequently
@@ -62,5 +64,7 @@ float EditSpinFloat( CEdit *edit, bool up );
 int SetSafeComboBoxSelection( CComboBox *combo, const char *string, int skip );
 int GetSafeComboBoxSelection( CComboBox *combo, CString &string, int skip );
 int UnsetSafeComboBoxSelection( CComboBox *combo, CString &string );
+
+#endif /* !IOD3_ENABLE_MFC */
 
 #endif /* !__AFX_STDAFX_H__ */
